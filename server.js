@@ -150,19 +150,15 @@ app.get('/api/getAll', async (req, res) => {
             address: c.address
         }));
 
-        const salesRaw = await query(`
-            SELECT s.*, c.name as customer_name 
-            FROM sales s 
-            LEFT JOIN customers c ON s.customer_id = c.customer_id 
-            ORDER BY s.created_at DESC
-        `);
-        const salesArr = salesRaw.map(s => ({
-            id: s.sale_id,
-            type: 'sale',
-            entityName: s.customer_name || 'عميل خارجي',
-            date: s.created_at ? new Date(s.created_at).toISOString().split('T')[0] : null,
-            total: parseFloat(s.total_amount),
-            status: s.status
+        const invoicesRaw = await query('SELECT * FROM invoices ORDER BY id DESC');
+        const invoicesArr = invoicesRaw.map(inv => ({
+            id: inv.id,
+            type: inv.type,
+            entityName: inv.entityName,
+            productName: inv.productName,
+            date: inv.date ? new Date(inv.date).toISOString().split('T')[0] : null,
+            total: parseFloat(inv.total),
+            status: inv.status
         }));
 
         res.json({
@@ -172,7 +168,7 @@ app.get('/api/getAll', async (req, res) => {
             categories: categoriesArr,
             warehouses: warehousesArr,
             customers: customersArr,
-            invoices: salesArr
+            invoices: invoicesArr
         });
     } catch (err) {
         console.error(err);
