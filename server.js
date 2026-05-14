@@ -68,7 +68,7 @@ app.post('/api/login', async (req, res) => {
         }
     } catch (err) {
         console.error(err);
-        res.json({ success: false, message: 'خطأ في الخادم' });
+        res.json({ success: false, message: 'خطأ في الخادم: ' + err.message });
     }
 });
 
