@@ -223,7 +223,17 @@ function renderDashboard() {
   document.getElementById('inStockCount').textContent = inStock;
   document.getElementById('lowStockCount').textContent = low;
   document.getElementById('totalValue').textContent = (totalVal / 1000).toFixed(0) + 'K';
-  updateDynamicBadges();
+  
+  // Calculate Daily Stats
+  const today = new Date().toISOString().split('T')[0];
+  const todayMoves = movements.filter(m => m.date === today);
+  const dailyIn = todayMoves.filter(m => m.type === 'in').reduce((s, m) => s + m.qty, 0);
+  const dailyOut = todayMoves.filter(m => m.type === 'out').reduce((s, m) => s + m.qty, 0);
+  const pendingCount = invoices.filter(inv => inv.status === 'آجل' || inv.status === 'تحت المراجعة').length;
+
+  document.getElementById('dailyInCount').textContent = `+${dailyIn}`;
+  document.getElementById('dailyOutCount').textContent = `-${dailyOut}`;
+  document.getElementById('pendingInvoicesCount').textContent = pendingCount;
 
   const recent = [...products].slice(-5).reverse();
   document.getElementById('dashboardTable').innerHTML =
