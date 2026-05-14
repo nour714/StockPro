@@ -221,7 +221,7 @@ function renderDashboard() {
 
   const recent = [...products].slice(-5).reverse();
   document.getElementById('dashboardTable').innerHTML =
-    tableHeader() + recent.map(p => productRowHTML(p)).join('') + '</tbody></table>';
+    '<div class="table-container">' + tableHeader() + recent.map(p => productRowHTML(p)).join('') + '</tbody></table></div>';
 }
 
 function renderInventory(filter = 'all') {
@@ -240,7 +240,7 @@ function renderInventory(filter = 'all') {
 
   document.getElementById('inventoryCount').textContent = `${list.length} منتج`;
   document.getElementById('inventoryTable').innerHTML =
-    tableHeader() + list.map(p => productRowHTML(p)).join('') + '</tbody></table>';
+    '<div class="table-container">' + tableHeader() + list.map(p => productRowHTML(p)).join('') + '</tbody></table></div>';
 }
 
 function renderMovements() {
@@ -257,9 +257,9 @@ function renderMovements() {
     </tr>`;
   }).join('');
 
-  document.getElementById('movementsTable').innerHTML = `<table><thead><tr>
+  document.getElementById('movementsTable').innerHTML = `<div class="table-container"><table><thead><tr>
     <th>#</th><th>المنتج</th><th>النوع</th><th>الكمية</th><th>المخزن</th><th>التاريخ</th><th>ملاحظات</th>
-  </tr></thead><tbody>${rows}</tbody></table>`;
+  </tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
 function renderSuppliers() {
@@ -276,9 +276,9 @@ function renderSuppliers() {
     </td>
   </tr>`).join('');
 
-  document.getElementById('suppliersTable').innerHTML = `<table><thead><tr>
+  document.getElementById('suppliersTable').innerHTML = `<div class="table-container"><table><thead><tr>
     <th>الاسم</th><th>التليفون</th><th>البريد</th><th>الفئة</th><th>العنوان</th><th>إجراءات</th>
-  </tr></thead><tbody>${rows}</tbody></table>`;
+  </tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
 function renderReports() {

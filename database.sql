@@ -4,12 +4,6 @@
 -- WARNING: THIS WILL DELETE ALL EXISTING DATA
 -- =============================================
 
-CREATE DATABASE IF NOT EXISTS warehouse_db
-CHARACTER SET utf8mb4
-COLLATE utf8mb4_unicode_ci;
-
-USE warehouse_db;
-
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS sale_items;
 DROP TABLE IF EXISTS sales;
