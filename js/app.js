@@ -756,8 +756,7 @@ function renderInvoices() {
     const entityList = isSale ? customers : suppliers;
     const entity = entityList.find(e => e.id === inv.entityId);
     const entityName = inv.entityName || (entity ? entity.name : '-');
-    const p = products.find(x => x.id === inv.productId);
-    const productName = inv.productName || (p ? p.name : '-');
+    const productName = inv.productName || '-';
     return `<tr>
       <td style="font-family:'JetBrains Mono',monospace">#${inv.id.toString().padStart(4,'0')}</td>
       <td><span class="badge ${isSale ? 'badge-info' : 'badge-warning'}">${isSale ? 'بيع' : 'شراء'}</span></td>
