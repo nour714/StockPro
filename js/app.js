@@ -123,11 +123,17 @@ function navigate(page, el) {
   document.getElementById('pageSubtitle').textContent = titlePair[1];
 
   renderPage(page);
-  document.getElementById('sidebar').classList.remove('open');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (sidebar) sidebar.classList.remove('active');
+  if (overlay) overlay.classList.remove('active');
 }
 
 function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  sidebar.classList.toggle('active');
+  if (overlay) overlay.classList.toggle('active');
 }
 
 // ============================================================
