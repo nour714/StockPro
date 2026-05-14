@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" id="htmlRoot">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام إدارة المخازن</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=2.1">
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+</head>
+<body>
+
+<!-- PREMIUM APP LOADER -->
+<div id="appLoader" class="app-loader">
+  <div class="loader-content">
+    <div class="loader-box">📦</div>
+    <div class="loader-text">StockPro</div>
+    <div class="loader-progress"><div class="progress-bar"></div></div>
+  </div>
+</div>
+
+<div class="app-wrapper">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">📦</div>
+      <div class="logo-text">StockPro</div>
+    </div>
+
+    <div class="sidebar-nav">
+      <!-- 1. الرئيسية والتحليلات -->
+      <div class="nav-section-title" data-i18n="mainMenu">نظرة عامة</div>
+      <div class="nav-item active" onclick="navigate('dashboard', this)">
+        <span class="nav-icon">🏠</span>
+        <span data-i18n="dashboard">لوحة التحكم</span>
+      </div>
+      <div class="nav-item" onclick="navigate('reports', this)">
+        <span class="nav-icon">📊</span>
+        <span data-i18n="reports">التقارير والتحليلات</span>
+      </div>
+      <div class="nav-item" onclick="navigate('alerts', this)">
+        <span class="nav-icon">🔔</span>
+        <span data-i18n="alerts">التنبيهات</span>
+        <span class="nav-badge" id="alertsBadge" onclick="event.stopPropagation(); navigate('alerts', this.parentElement);">0</span>
+      </div>
+
+      <!-- 2. إدارة المستودع -->
+      <div class="nav-section-title" data-i18n="inventoryManagement">إدارة المستودع</div>
+      <div class="nav-item" onclick="navigate('inventory', this)">
+        <span class="nav-icon">📦</span>
+        <span data-i18n="inventory">المنتجات والمخزون</span>
+        <span class="nav-badge" id="lowStockBadge" onclick="event.stopPropagation(); navigate('inventory', this.parentElement); filterTab('low', document.querySelector('.tab-low'));">0</span>
+      </div>
+      <div class="nav-item" onclick="navigate('movements', this)">
+        <span class="nav-icon">🔄</span>
+        <span data-i18n="movements">حركات المخزن</span>
+      </div>
+      <div class="nav-item" onclick="navigate('warehouses', this)">
+        <span class="nav-icon">🏬</span>
+        <span data-i18n="warehouses">المستودعات</span>
+      </div>
+
+      <!-- 3. التجارة والجهات -->
+      <div class="nav-section-title" data-i18n="commerce">التجارة والجهات</div>
+      <div class="nav-item" onclick="navigate('invoices', this)">
+        <span class="nav-icon">🧾</span>
+        <span data-i18n="invoices">الفواتير</span>
+      </div>
+      <div class="nav-item" onclick="navigate('customers', this)">
+        <span class="nav-icon">👥</span>
+        <span data-i18n="customers">العملاء</span>
+      </div>
+      <div class="nav-item" onclick="navigate('suppliers', this)">
+        <span class="nav-icon">🚛</span>
+        <span data-i18n="suppliers">الموردين</span>
+      </div>
+      
+      <!-- 4. إعدادات النظام -->
+      <div class="nav-section-title" data-i18n="system">إعدادات النظام</div>
+      <div class="nav-item" onclick="navigate('barcodes', this)">
+        <span class="nav-icon">🖨️</span>
+        <span data-i18n="barcodes">طباعة الباركود</span>
+      </div>
+      <div class="nav-item" onclick="navigate('categories', this)">
+        <span class="nav-icon">🏷️</span>
+        <span data-i18n="categories">فئات المنتجات</span>
+      </div>
+      <div class="nav-item" onclick="navigate('settings', this)">
+        <span class="nav-icon">⚙️</span>
+        <span data-i18n="settings">الإعدادات العامة</span>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="userAvatar">👤</div>
+        <div style="flex:1">
+          <div class="user-name" id="displayUserName">StockPro Admin</div>
+          <div class="user-role" id="displayUserRole" data-i18n="systemAdmin">مدير النظام</div>
+        </div>
+        <button class="btn-logout-premium" onclick="logout()" title="تسجيل الخروج">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div>
+        <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+        <div class="page-title" id="pageTitle">لوحة <span>التحكم</span></div>
+        <div class="page-subtitle" id="pageSubtitle">مرحباً! نظرة عامة على المستودعات اليوم</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="search-box">
+          <span>🔍</span>
+          <input type="text" id="searchInput" oninput="searchProducts()" placeholder="ابحث عن منتج، كود..." data-i18n-placeholder="searchPlaceholder">
+        </div>
+        <button class="btn btn-primary" onclick="openModal()" id="addProductBtn">
+          <span data-i18n="addProduct">➕ إضافة منتج</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="page-section active" id="page-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card blue">
+          <div class="stat-icon">📦</div>
+          <div class="stat-value" id="totalProducts">0</div>
+          <div class="stat-label">إجمالي المنتجات</div>
+          <div class="stat-change up">↑ 12% هذا الشهر</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-icon">✅</div>
+          <div class="stat-value" id="inStockCount">0</div>
+          <div class="stat-label">منتجات متاحة</div>
+          <div class="stat-change up">↑ 5% هذا الأسبوع</div>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-icon">⚠️</div>
+          <div class="stat-value" id="lowStockCount">0</div>
+          <div class="stat-label">مخزون منخفض</div>
+          <div class="stat-change down">↓ تحتاج مراجعة</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-icon">💰</div>
+          <div class="stat-value" id="totalValue">0</div>
+          <div class="stat-label">قيمة المخزون (جنيه)</div>
+          <div class="stat-change up">↑ 8% هذا الشهر</div>
+        </div>
+      </div>
+
+      <div class="summary-row">
+        <div class="mini-card">
+          <div class="mini-icon">📥</div>
+          <div>
+            <div class="mini-label">إجمالي الوارد اليوم</div>
+            <div class="mini-value">+240</div>
+          </div>
+        </div>
+        <div class="mini-card">
+          <div class="mini-icon">📤</div>
+          <div>
+            <div class="mini-label">إجمالي الصادر اليوم</div>
+            <div class="mini-value">-185</div>
+          </div>
+        </div>
+        <div class="mini-card">
+          <div class="mini-icon">📋</div>
+          <div>
+            <div class="mini-label">طلبات معلقة</div>
+            <div class="mini-value">7</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">أحدث المنتجات</div>
+            <div class="card-subtitle">آخر المنتجات المضافة للمخزن</div>
+          </div>
+          <div class="card-actions">
+            <button class="btn btn-ghost btn-sm" onclick="navigate('inventory', document.querySelector('.nav-item:nth-child(2)'))">عرض الكل</button>
+          </div>
+        </div>
+        <div id="dashboardTable"></div>
+      </div>
+    </div>
+
+    <!-- INVENTORY -->
+    <div class="page-section" id="page-inventory">
+      <div class="tabs">
+        <div class="tab active" onclick="filterTab('all', this)">الكل</div>
+        <div class="tab" onclick="filterTab('instock', this)">متاح</div>
+        <div class="tab tab-low" onclick="filterTab('low', this)">منخفض</div>
+        <div class="tab" onclick="filterTab('out', this)">نفذ</div>
+      </div>
+      <div class="table-card" style="border-top-left-radius:0;border-top-right-radius:0;border-top:none;">
+        <div class="card-header">
+          <div>
+            <div class="card-title">قائمة المخزون</div>
+            <div class="card-subtitle" id="inventoryCount">جميع المنتجات</div>
+          </div>
+          <div class="card-actions">
+            <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇️ تصدير</button>
+            <button class="btn btn-primary btn-sm" onclick="openModal()">➕ إضافة</button>
+          </div>
+        </div>
+        <div id="inventoryTable"></div>
+      </div>
+    </div>
+
+    <!-- MOVEMENTS -->
+    <div class="page-section" id="page-movements">
+      <div class="table-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">حركات المخزن</div>
+            <div class="card-subtitle">سجل الوارد والصادر</div>
+          </div>
+          <div class="card-actions">
+            <button class="btn btn-success btn-sm" onclick="openMovementModal('in')">📥 إضافة وارد</button>
+            <button class="btn btn-danger btn-sm" onclick="openMovementModal('out')">📤 إضافة صادر</button>
+          </div>
+        </div>
+        <div id="movementsTable"></div>
+      </div>
+    </div>
+
+    <!-- SUPPLIERS -->
+    <div class="page-section" id="page-suppliers">
+      <div class="table-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">الموردين</div>
+            <div class="card-subtitle">قائمة الموردين المعتمدين</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openSupplierModal()">➕ إضافة مورد</button>
+        </div>
+        <div id="suppliersTable"></div>
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="page-section" id="page-reports">
+      <div class="stats-grid">
+        <div class="stat-card blue">
+          <div class="stat-icon">📈</div>
+          <div class="stat-value" id="rTotalIn">0</div>
+          <div class="stat-label">إجمالي الوارد</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-icon">📉</div>
+          <div class="stat-value" id="rTotalOut">0</div>
+          <div class="stat-label">إجمالي الصادر</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-icon">📦</div>
+          <div class="stat-value" id="rCategories">0</div>
+          <div class="stat-label">عدد الفئات</div>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-icon">🏆</div>
+          <div class="stat-value" id="rTopProduct">-</div>
+          <div class="stat-label">أعلى حركة</div>
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="card-header">
+          <div class="card-title">تقرير المخزون الكامل</div>
+        </div>
+        <div id="reportTable"></div>
+      </div>
+    </div>
+
+    <!-- ALERTS -->
+    <div class="page-section" id="page-alerts">
+      <div class="table-card">
+        <div class="card-header">
+          <div class="card-title">🔔 التنبيهات والإشعارات</div>
+        </div>
+        <div class="alert-list" id="alertsList"></div>
+      </div>
+    </div>
+
+    <!-- CUSTOMERS -->
+    <div class="page-section" id="page-customers">
+      <div class="table-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">العملاء</div>
+            <div class="card-subtitle">قائمة العملاء المسجلين</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openCustomerModal()">➕ إضافة عميل</button>
+        </div>
+        <div id="customersTable"></div>
+      </div>
+    </div>
+
+    <!-- INVOICES -->
+    <div class="page-section" id="page-invoices">
+      <div class="table-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">الفواتير</div>
+            <div class="card-subtitle">سجل فواتير البيع والشراء</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openInvoiceModal()">➕ إضافة فاتورة</button>
+        </div>
+        <div id="invoicesTable"></div>
+      </div>
+    </div>
+
+    <!-- CATEGORIES -->
+    <div class="page-section" id="page-categories">
+      <div class="table-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">الفئات</div>
+            <div class="card-subtitle">إدارة فئات المنتجات</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openCategoryModal()">➕ إضافة فئة</button>
+        </div>
+        <div id="categoriesTable"></div>
+      </div>
+    </div>
+
+    <!-- BARCODES -->
+    <div class="page-section" id="page-barcodes">
+      <div class="table-card" style="padding: 24px; margin-bottom: 20px;">
+        <div class="form-grid" style="max-width: 600px;">
+          <div class="form-group full">
+            <label class="form-label">المنتج</label>
+            <select class="form-select" id="barcodeProduct"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">الكمية المراد طباعتها</label>
+            <input class="form-input" id="barcodeQty" type="number" value="1" min="1" max="100">
+          </div>
+          <div class="form-group" style="display: flex; align-items: flex-end;">
+            <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="generateBarcodes()">⚙️ إنشاء الباركود</button>
+          </div>
+        </div>
+      </div>
+      <div class="table-card" style="padding: 24px; background: white; color: black; display: none;" id="barcodePreviewCard">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;" class="no-print">
+          <h3 style="color: #333; margin: 0;">معاينة الطباعة</h3>
+          <button class="btn btn-primary" onclick="window.print()">🖨️ طباعة الآن</button>
+        </div>
+        <div id="barcodeGrid" class="barcode-grid"></div>
+      </div>
+    </div>
+
+    <!-- WAREHOUSES -->
+    <div class="page-section" id="page-warehouses">
+      <div class="table-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">إدارة المخازن</div>
+            <div class="card-subtitle">قائمة المخازن المسجلة</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openWarehouseModal()">➕ إضافة مخزن</button>
+        </div>
+        <div id="warehousesTable"></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page-section" id="page-settings">
+      <div class="table-card" style="padding: 24px;">
+        <div class="card-title" style="margin-bottom: 20px;">إعدادات النظام</div>
+        <div class="form-grid" style="max-width: 600px;">
+          <div class="form-group full">
+            <label class="form-label">اسم المخزن / الشركة</label>
+            <input class="form-input" id="setStoreName" value="StockPro">
+          </div>
+          <div class="form-group">
+            <label class="form-label">اسم المستخدم</label>
+            <input class="form-input" id="setManagerName" value="أحمد محمود">
+          </div>
+          <div class="form-group">
+            <label class="form-label">العملة</label>
+            <select class="form-select" id="setCurrency">
+              <option value="جنيه">جنيه مصري (EGP)</option>
+              <option value="ريال">ريال سعودي (SAR)</option>
+              <option value="درهم">درهم إماراتي (AED)</option>
+              <option value="$">دولار أمريكي (USD)</option>
+            </select>
+          </div>
+        </div> <!-- End of Form Grid -->
+
+        <!-- Dedicated Appearance & Language Section -->
+        <style>
+          .settings-premium-box {
+            background: var(--surface2);
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 25px;
+            border: 1px solid var(--border);
+          }
+          .premium-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+          }
+          .premium-btns-group {
+            display: flex;
+            flex-direction: column; /* جعل كل زر في سطر */
+            gap: 12px;
+          }
+          .btn-premium-toggle {
+            width: 100% !important; /* عرض كامل */
+            justify-content: center !important; /* توسيط المحتوى */
+          }
+          .btn-premium-toggle {
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 14px !important;
+            padding: 12px 28px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            color: #1e293b !important;
+            font-family: 'Cairo', sans-serif !important;
+            font-size: 15px !important;
+            font-weight: 700 !important;
+            cursor: pointer !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+            transition: all 0.3s ease !important;
+            outline: none !important;
+          }
+          .btn-premium-toggle:hover {
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12) !important;
+            background: #f8fafc !important;
+          }
+          /* Dark Mode adjustments inside inline style */
+          html:not(.light-mode) .btn-premium-toggle {
+            background: #1e293b !important;
+            color: #f8fafc !important;
+            border-color: rgba(255,255,255,0.1) !important;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
+          }
+          html:not(.light-mode) .btn-premium-toggle:hover {
+            background: #334155 !important;
+          }
+        </style>
+
+        <!-- Dedicated Language Section -->
+        <div class="settings-premium-box">
+          <span class="premium-label">اللغة</span>
+          <div class="premium-btns-group">
+            <button class="btn-premium-toggle" id="setLangBtn" onclick="toggleLanguage()">🌍 عربي</button>
+          </div>
+        </div>
+
+        <!-- Dedicated Appearance Section -->
+        <div class="settings-premium-box" style="margin-top: 15px;">
+          <span class="premium-label">المظهر</span>
+          <div class="premium-btns-group">
+            <button class="btn-premium-toggle" id="setThemeBtn" onclick="toggleTheme()">🌙</button>
+          </div>
+        </div>
+
+        <div style="margin-top: 30px; display:flex; gap:12px; flex-wrap:wrap; border-top:1px solid var(--border); padding-top:20px;">
+          <button class="btn btn-primary" onclick="saveSettings()">💾 حفظ الإعدادات</button>
+          <button class="btn btn-danger" onclick="resetAllData()" style="opacity:0.8;">🗑️ مسح جميع البيانات</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ADD PRODUCT MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">➕ إضافة منتج جديد</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">اسم المنتج *</label>
+          <input class="form-input" id="pName" placeholder="مثل: لابتوب ديل">
+        </div>
+        <div class="form-group">
+          <label class="form-label">كود المنتج (SKU) *</label>
+          <input class="form-input" id="pSku" placeholder="مثل: DELL-001">
+        </div>
+        <div class="form-group">
+          <label class="form-label">الفئة</label>
+          <input class="form-input" id="pCategory" placeholder="ادخل الفئة">
+        </div>
+        <div class="form-group">
+          <label class="form-label">الوحدة</label>
+          <input class="form-input" id="pUnit" placeholder="قطعة، كيلو، إلخ">
+        </div>
+        <div class="form-group">
+          <label class="form-label">الكمية الحالية *</label>
+          <input class="form-input" id="pQty" type="number" placeholder="0" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">الحد الأدنى للتنبيه</label>
+          <input class="form-input" id="pMinQty" type="number" placeholder="10" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">سعر الشراء</label>
+          <input class="form-input" id="pBuyPrice" type="number" placeholder="0.00" min="0" step="0.01">
+        </div>
+        <div class="form-group">
+          <label class="form-label">سعر البيع</label>
+          <input class="form-input" id="pSellPrice" type="number" placeholder="0.00" min="0" step="0.01">
+        </div>
+        <div class="form-group">
+          <label class="form-label">المورد</label>
+          <input type="text" class="form-input" id="pSupplier" list="suppliersList" placeholder="اختر مورد أو اكتب جديد...">
+          <datalist id="suppliersList"></datalist>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">ملاحظات</label>
+          <input class="form-input" id="pNotes" placeholder="ملاحظات اختيارية...">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveProduct()">💾 حفظ المنتج</button>
+    </div>
+  </div>
+</div>
+
+<!-- MOVEMENT MODAL -->
+<div class="modal-overlay" id="movementModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="movementTitle">📥 إضافة وارد</div>
+      <button class="modal-close" onclick="document.getElementById('movementModal').classList.remove('active')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label class="form-label">المنتج *</label>
+          <select class="form-select" id="mProduct"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">الكمية *</label>
+          <input class="form-input" id="mQty" type="number" placeholder="0" min="1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">التاريخ</label>
+          <input class="form-input" id="mDate" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">المخزن</label>
+          <select class="form-select" id="mWarehouse"></select>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">ملاحظات</label>
+          <input class="form-input" id="mNotes" placeholder="سبب الحركة...">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('movementModal').classList.remove('active')">إلغاء</button>
+      <button class="btn btn-primary" id="movementSaveBtn" onclick="saveMovement()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUPPLIER MODAL -->
+<div class="modal-overlay" id="supplierModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">🚛 إضافة مورد</div>
+      <button class="modal-close" onclick="document.getElementById('supplierModal').classList.remove('active')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">اسم المورد *</label>
+          <input class="form-input" id="sName" placeholder="اسم الشركة أو المورد">
+        </div>
+        <div class="form-group">
+          <label class="form-label">رقم التليفون</label>
+          <input class="form-input" id="sPhone" placeholder="01xxxxxxxxx">
+        </div>
+        <div class="form-group">
+          <label class="form-label">البريد الإلكتروني</label>
+          <input class="form-input" id="sEmail" placeholder="example@domain.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">الفئة</label>
+          <input class="form-input" id="sCategory" placeholder="ادخل فئة المورد">
+        </div>
+        <div class="form-group full">
+          <label class="form-label">العنوان</label>
+          <input class="form-input" id="sAddress" placeholder="عنوان المورد">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('supplierModal').classList.remove('active')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveSupplier()">💾 حفظ المورد</button>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOMER MODAL -->
+<div class="modal-overlay" id="customerModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">👥 إضافة عميل</div>
+      <button class="modal-close" onclick="document.getElementById('customerModal').classList.remove('active')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">اسم العميل *</label>
+          <input class="form-input" id="cName" placeholder="اسم العميل أو الشركة">
+        </div>
+        <div class="form-group">
+          <label class="form-label">رقم التليفون</label>
+          <input class="form-input" id="cPhone" placeholder="01xxxxxxxxx">
+        </div>
+        <div class="form-group">
+          <label class="form-label">البريد الإلكتروني</label>
+          <input class="form-input" id="cEmail" placeholder="example@domain.com">
+        </div>
+        <div class="form-group full">
+          <label class="form-label">العنوان</label>
+          <input class="form-input" id="cAddress" placeholder="عنوان العميل">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('customerModal').classList.remove('active')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveCustomer()">💾 حفظ العميل</button>
+    </div>
+  </div>
+</div>
+
+<!-- INVOICE MODAL -->
+<div class="modal-overlay" id="invoiceModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">🧾 إضافة فاتورة</div>
+      <button class="modal-close" onclick="document.getElementById('invoiceModal').classList.remove('active')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">النوع *</label>
+          <select class="form-select" id="invType" onchange="toggleInvoiceEntity()">
+            <option value="sale">بيع (للعملاء)</option>
+            <option value="purchase">شراء (من الموردين)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">العميل / المورد *</label>
+          <input type="text" class="form-input" id="invEntity" list="entitiesList" placeholder="اختر جهة أو اكتب جديد...">
+          <datalist id="entitiesList"></datalist>
+        </div>
+        <div class="form-group">
+          <label class="form-label">التاريخ *</label>
+          <input class="form-input" id="invDate" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">المنتج</label>
+          <input class="form-input" id="invProduct" list="productsList" placeholder="اختر منتج أو اكتب جديد">
+          <datalist id="productsList"></datalist>
+        </div>
+        <div class="form-group">
+          <label class="form-label">الإجمالي *</label>
+          <input class="form-input" id="invTotal" type="number" placeholder="0.00" min="0" step="0.01">
+        </div>
+        <div class="form-group full">
+          <label class="form-label">الحالة</label>
+          <select class="form-select" id="invStatus">
+            <option>مدفوع</option>
+            <option>آجل</option>
+            <option>ملغى</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('invoiceModal').classList.remove('active')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveInvoice()">💾 حفظ الفاتورة</button>
+    </div>
+  </div>
+</div>
+
+<!-- WAREHOUSE MODAL -->
+<div class="modal-overlay" id="warehouseModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">🏠 إضافة مخزن</div>
+      <button class="modal-close" onclick="document.getElementById('warehouseModal').classList.remove('active')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">اسم المخزن *</label>
+          <input class="form-input" id="wName" placeholder="اسم المخزن الرئيسي">
+        </div>
+        <div class="form-group">
+          <label class="form-label">الموقع</label>
+          <input class="form-input" id="wLocation" placeholder="العنوان">
+        </div>
+        <div class="form-group full">
+          <label class="form-label">المدير المسئول</label>
+          <input class="form-input" id="wManager" placeholder="اسم المدير">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('warehouseModal').classList.remove('active')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveWarehouse()">💾 حفظ المخزن</button>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY MODAL -->
+<div class="modal-overlay" id="categoryModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">🏷️ إضافة فئة</div>
+      <button class="modal-close" onclick="document.getElementById('categoryModal').classList.remove('active')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label class="form-label">اسم الفئة *</label>
+          <input class="form-input" id="catName" placeholder="مثال: أثاث مكتبي">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('categoryModal').classList.remove('active')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveCategory()">💾 حفظ الفئة</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="js/i18n.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
