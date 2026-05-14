@@ -766,7 +766,12 @@ function renderInvoices() {
       <td style="font-family:'JetBrains Mono',monospace">${inv.total.toLocaleString()} ${settings.currency}</td>
       <td>${inv.date}</td>
       <td><span class="badge ${inv.status === 'مدفوع' ? 'badge-success' : (inv.status === 'ملغى' ? 'badge-danger' : 'badge-warning')}">${inv.status}</span></td>
-      <td><button class="btn btn-danger btn-sm" onclick="deleteInvoice(${inv.id})">🗑️</button></td>
+      <td>
+        <div class="action-btns">
+          <button class="btn btn-ghost btn-sm" onclick="printInvoice(${inv.id})" title="طباعة">🖨️</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteInvoice(${inv.id})">🗑️</button>
+        </div>
+      </td>
     </tr>`;
   }).join('');
   document.getElementById('invoicesTable').innerHTML = `<table><thead><tr><th>رقم</th><th>النوع</th><th>الجهة</th><th>المنتج</th><th>الإجمالي</th><th>التاريخ</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>${rows}</tbody></table>`;
@@ -842,6 +847,65 @@ async function deleteInvoice(id) {
   } catch (e) {
     showToast('حدث خطأ', 'error');
   }
+}
+
+function printInvoice(id) {
+  const inv = invoices.find(i => i.id === id);
+  if (!inv) return;
+  
+  const isSale = inv.type === 'sale';
+  const entityName = inv.entityName || '-';
+  const productName = inv.productName || '-';
+  
+  const printArea = document.getElementById('invoicePrintArea');
+  printArea.innerHTML = `
+    <div class="invoice-header">
+      <div>
+        <div class="invoice-title">${isSale ? 'فاتورة مبيعات' : 'فاتورة مشتريات'}</div>
+        <div style="margin-top:5px; color:#666">رقم الفاتورة: #${inv.id.toString().padStart(4,'0')}</div>
+      </div>
+      <div class="invoice-info">
+        <div style="font-weight:bold; font-size:20px">${settings.storeName}</div>
+        <div>التاريخ: ${inv.date}</div>
+        <div>الحالة: ${inv.status}</div>
+      </div>
+    </div>
+    
+    <div style="margin: 20px 0;">
+      <strong>${isSale ? 'العميل:' : 'المورد:'}</strong> ${entityName}
+    </div>
+    
+    <table class="invoice-table">
+      <thead>
+        <tr>
+          <th>البيان / المنتج</th>
+          <th>الكمية</th>
+          <th>السعر</th>
+          <th>الإجمالي</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>${productName}</td>
+          <td>1</td> <!-- Simple invoice for now -->
+          <td>${inv.total.toLocaleString()} ${settings.currency}</td>
+          <td>${inv.total.toLocaleString()} ${settings.currency}</td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <div class="invoice-total-row">
+      <span>الإجمالي النهائي:</span>
+      <span>${inv.total.toLocaleString()} ${settings.currency}</span>
+    </div>
+    
+    <div class="invoice-footer">
+      <div>شكراً لتعاملكم معنا</div>
+      <div style="margin-top:5px; font-weight:bold">${settings.storeName}</div>
+    </div>
+  `;
+  
+  window.print();
 }
 
 function renderBarcodesPage() {
