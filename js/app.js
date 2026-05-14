@@ -763,6 +763,7 @@ function renderInvoices() {
       <td>${entityName}</td>
       <td>${productName}</td>
       <td style="font-family:'JetBrains Mono',monospace">${inv.total.toLocaleString()} ${settings.currency}</td>
+      <td>${inv.quantity || 1}</td>
       <td>${inv.date}</td>
       <td><span class="badge ${inv.status === 'مدفوع' ? 'badge-success' : (inv.status === 'ملغى' ? 'badge-danger' : 'badge-warning')}">${inv.status}</span></td>
       <td>
@@ -773,7 +774,7 @@ function renderInvoices() {
       </td>
     </tr>`;
   }).join('');
-  document.getElementById('invoicesTable').innerHTML = `<table><thead><tr><th>رقم</th><th>النوع</th><th>الجهة</th><th>المنتج</th><th>الإجمالي</th><th>التاريخ</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>${rows}</tbody></table>`;
+  document.getElementById('invoicesTable').innerHTML = `<table><thead><tr><th>رقم</th><th>النوع</th><th>الجهة</th><th>المنتج</th><th>الإجمالي</th><th>الكمية</th><th>التاريخ</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
 function toggleInvoiceEntity() {
@@ -791,6 +792,7 @@ function toggleInvoiceEntity() {
 function openInvoiceModal() {
   document.getElementById('invDate').value = new Date().toISOString().split('T')[0];
   document.getElementById('invTotal').value = '';
+  document.getElementById('invQty').value = '1';
   document.getElementById('invStatus').value = 'مدفوع';
   document.getElementById('invType').value = 'sale';
   document.getElementById('invProduct').value = '';
@@ -814,6 +816,7 @@ async function saveInvoice() {
     type: document.getElementById('invType').value,
     entityName: document.getElementById('invEntity').value,
     productName: document.getElementById('invProduct').value,
+    quantity: parseInt(document.getElementById('invQty').value) || 1,
     date: document.getElementById('invDate').value,
     total: total,
     status: document.getElementById('invStatus').value
@@ -886,8 +889,8 @@ function printInvoice(id) {
       <tbody>
         <tr>
           <td>${productName}</td>
-          <td>1</td> <!-- Simple invoice for now -->
-          <td>${inv.total.toLocaleString()} ${settings.currency}</td>
+          <td>${inv.quantity || 1}</td>
+          <td>${(inv.total / (inv.quantity || 1)).toLocaleString()} ${settings.currency}</td>
           <td>${inv.total.toLocaleString()} ${settings.currency}</td>
         </tr>
       </tbody>

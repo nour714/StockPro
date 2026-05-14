@@ -156,6 +156,7 @@ app.get('/api/getAll', async (req, res) => {
             type: inv.type,
             entityName: inv.entityName,
             productName: inv.productName,
+            quantity: inv.quantity || 1,
             date: inv.date ? new Date(inv.date).toISOString().split('T')[0] : null,
             total: parseFloat(inv.total),
             status: inv.status
@@ -339,9 +340,9 @@ app.post('/api/deleteCustomer', async (req, res) => {
 
 app.post('/api/saveInvoice', async (req, res) => {
     try {
-        const { type, entityName, productName, date, total, status } = req.body;
-        await query("INSERT INTO invoices (type, entityName, productName, date, total, status) VALUES (?, ?, ?, ?, ?, ?)", 
-            [type || 'sale', entityName || '', productName || '', date || '', total || 0, status || '']);
+        const { type, entityName, productName, quantity, date, total, status } = req.body;
+        await query("INSERT INTO invoices (type, entityName, productName, quantity, date, total, status) VALUES (?, ?, ?, ?, ?, ?, ?)", 
+            [type || 'sale', entityName || '', productName || '', quantity || 1, date || '', total || 0, status || '']);
         res.json({ success: true });
     } catch (err) {
         res.json({ success: false, message: err.message });
