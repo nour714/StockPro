@@ -1040,6 +1040,7 @@ async function loadDataFromAPI() {
         if (typeof applyLanguage === 'function') applyLanguage();
         renderDashboard();
         updateUserInfo();
+        updateSidebarBadges();
     } catch (e) {
         console.error("API Load Error", e);
         applySettings();
@@ -1047,6 +1048,7 @@ async function loadDataFromAPI() {
         if (typeof applyLanguage === 'function') applyLanguage();
         renderDashboard();
         updateUserInfo();
+        updateSidebarBadges();
     } finally {
         // Hide Loader with delay for premium feel
         setTimeout(() => {
@@ -1054,6 +1056,21 @@ async function loadDataFromAPI() {
             if(loader) loader.classList.add('fade-out');
         }, 800);
     }
+}
+
+function updateSidebarBadges() {
+  const lowCount = products.filter(p => p.qty <= p.minQty).length;
+  const alertBadge = document.getElementById('alertsBadge');
+  const inventoryBadge = document.getElementById('sidebarInventoryCount');
+
+  if (alertBadge) {
+    alertBadge.textContent = lowCount;
+    alertBadge.style.display = lowCount > 0 ? 'flex' : 'none';
+  }
+  if (inventoryBadge) {
+    inventoryBadge.textContent = products.length;
+    inventoryBadge.style.display = products.length > 0 ? 'flex' : 'none';
+  }
 }
 
 function showToast(msg, type = 'success') {
