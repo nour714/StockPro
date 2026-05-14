@@ -343,12 +343,9 @@ app.post('/api/deleteCustomer', async (req, res) => {
 
 app.post('/api/saveInvoice', async (req, res) => {
     try {
-        const { entityName, total, status } = req.body;
-        
-        const custRes = await query("SELECT customer_id FROM customers WHERE name = ?", [entityName || '']);
-        const custId = custRes.length > 0 ? custRes[0].customer_id : null;
-
-        await query("INSERT INTO sales (customer_id, total_amount, status) VALUES (?, ?, ?)", [custId, total || 0, status || 'مدفوع']);
+        const { type, entityName, productName, date, total, status } = req.body;
+        await query("INSERT INTO invoices (type, entityName, productName, date, total, status) VALUES (?, ?, ?, ?, ?, ?)", 
+            [type || 'sale', entityName || '', productName || '', date || '', total || 0, status || '']);
         res.json({ success: true });
     } catch (err) {
         res.json({ success: false, message: err.message });
@@ -357,7 +354,8 @@ app.post('/api/saveInvoice', async (req, res) => {
 
 app.post('/api/deleteInvoice', async (req, res) => {
     try {
-        await query("DELETE FROM sales WHERE sale_id=?", [req.body.id]);
+        const { id } = req.body;
+        await query("DELETE FROM invoices WHERE id = ?", [id]);
         res.json({ success: true });
     } catch (err) {
         res.json({ success: false, message: err.message });
